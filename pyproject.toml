@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "solcoins"
+version = "0.1.0"
+description = ""
+authors = ["jukafah <jukafah@proton.me>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+discord-py = "^2.1.1"
+python-dotenv = "^0.21.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
