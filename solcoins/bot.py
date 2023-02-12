@@ -1,5 +1,6 @@
 import os
 import sqlite3
+from collections import defaultdict
 
 import aiohttp
 import discord
@@ -32,24 +33,50 @@ class Watch(commands.Cog):
     def cog_unload(self):
         self.update.cancel()
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=5)
     async def update(self):
-        print('in update')
-        guild = discord.utils.get(client.guilds, name=GUILD)
         cursor = database.cursor()
+        watchlists_to_update = cursor.execute('SELECT guild_id, channel_id, address from watchlist').fetchall()
+        print(f'watchlists_to_update: {watchlists_to_update}')
 
-        to_update = [{'channel_id': row[0], 'address': row[1]} for row in cursor.execute('SELECT channel_id, address from watchlist where guild_id=?', (guild.id,))]
-        addresses = [item['address'] for item in to_update]
+        formatted = defaultdict(list)
+
+        """
+        {
+          "983794691914989619": [
+            {"channel_id": "1074450604576997467", "address": "32RdXYmiHbmfVpCTJ8dcjDMGShHkjcoTWYf1QtMb5ZDT"},
+            {"channel_id": "1074451330766209056", "address": "F9CpWoyeBJfoRB8f2pBe2ZNPbPsEE76mWZWme3StsvHK"},
+          ]
+        }
+        """
+        for watching in watchlists_to_update:
+            formatted[watching[0]].append({'channel_id': watching[1], 'address': watching[2]})
+
+        for guild in client.guilds:
+            print(f'guild: {guild} (guild_id: {guild.id})')
+            print(f'watchlist to update: {formatted[guild.id]}')
+            addresses = [key['address'] for key in formatted[guild.id]]
+            print(f'addresses: {addresses}')
+            updated_prices = await get_price(",".join(addresses))
+            for item in formatted[guild.id]:
+                channel_id = item['channel_id']
+                address = item['address']
+                print(f"channel_id: {channel_id}\naddress: {address}")
+                channel = discord.utils.get(guild.voice_channels, id=channel_id)
+                split_name = channel.name.split('@')
+                split_name[1] = str(updated_prices['data'][address]['value'])
+                await channel.edit(name="@ ".join(split_name))
+
 
         # get list of all coins to call /multi_price
-        updated_prices = await get_price(address="blah")
-        for item in to_update:
-            channel_id = item['channel_id']
-            address = item['address']
-            channel = discord.utils.get(guild.voice_channels, id=channel_id)
-            split_name = channel.name.split('@')
-            split_name[1] = str(updated_prices['data'][address]['value'])
-            await channel.edit(name="@ ".join(split_name))
+        # updated_prices = await get_price(address="blah")
+        # for item in to_update:
+        #     channel_id = item['channel_id']
+        #     address = item['address']
+        #     channel = discord.utils.get(guild.voice_channels, id=channel_id)
+        #     split_name = channel.name.split('@')
+        #     split_name[1] = str(updated_prices['data'][address]['value'])
+        #     await channel.edit(name="@ ".join(split_name))
 
 
 def bootstrap():
@@ -59,6 +86,7 @@ def bootstrap():
 
 @client.event
 async def on_ready():
+    print(f"client.guilds: {client.guilds}")
     guild = discord.utils.get(client.guilds, name=GUILD)
     bootstrap()
     Watch()
@@ -79,13 +107,13 @@ async def get_price(address):
     return {
         "data": {
             "F9CpWoyeBJfoRB8f2pBe2ZNPbPsEE76mWZWme3StsvHK": {
-                "value": 0.0005475065678021732,
+                "value": 0.0002475065678021732,
                 "updateUnixTime": 1676210288,
                 "updateHumanTime": "2023-02-12T13:58:08",
                 "priceChange24h": 9.029513553793803
             },
             "32RdXYmiHbmfVpCTJ8dcjDMGShHkjcoTWYf1QtMb5ZDT": {
-                "value": 0.000003273248638588024,
+                "value": 0.000123273248638588024,
                 "updateUnixTime": 1676220413,
                 "updateHumanTime": "2023-02-12T16:46:53",
                 "priceChange24h": 319.2046976709038
