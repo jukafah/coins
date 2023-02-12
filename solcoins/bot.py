@@ -1,4 +1,3 @@
-# bot.py
 import os
 import sqlite3
 
@@ -38,22 +37,19 @@ class Watch(commands.Cog):
         print('in update')
         guild = discord.utils.get(client.guilds, name=GUILD)
         cursor = database.cursor()
+
+        to_update = [{'channel_id': row[0], 'address': row[1]} for row in cursor.execute('SELECT channel_id, address from watchlist where guild_id=?', (guild.id,))]
+        addresses = [item['address'] for item in to_update]
+
         # get list of all coins to call /multi_price
-        to_update = [row for row in cursor.execute('SELECT channel_id, address from watchlist where guild_id=?', (guild.id,))]
-        for row in cursor.execute('SELECT channel_id, address from watchlist where guild_id=?', (guild.id,)):
-            print(f'row in watchlist {row}')
-            channel_id = row[0]
-            address = row[1]
-            print(f'channel_id: {channel_id}')
+        updated_prices = await get_price(address="blah")
+        for item in to_update:
+            channel_id = item['channel_id']
+            address = item['address']
             channel = discord.utils.get(guild.voice_channels, id=channel_id)
-            # update price
-            updated_price = await get_price(address)
             split_name = channel.name.split('@')
-            print(f'split_name: {split_name}')
-            # split_name[1] = str(updated_price['data'][address]['value'])[:8]
-            split_name[1] = "0.12345"
+            split_name[1] = str(updated_prices['data'][address]['value'])
             await channel.edit(name="@ ".join(split_name))
-            print(f'channel: {channel}')
 
 
 def bootstrap():
@@ -83,10 +79,16 @@ async def get_price(address):
     return {
         "data": {
             "F9CpWoyeBJfoRB8f2pBe2ZNPbPsEE76mWZWme3StsvHK": {
-                "value": 0.0004475065678021732,
+                "value": 0.0005475065678021732,
                 "updateUnixTime": 1676210288,
                 "updateHumanTime": "2023-02-12T13:58:08",
                 "priceChange24h": 9.029513553793803
+            },
+            "32RdXYmiHbmfVpCTJ8dcjDMGShHkjcoTWYf1QtMb5ZDT": {
+                "value": 0.000003273248638588024,
+                "updateUnixTime": 1676220413,
+                "updateHumanTime": "2023-02-12T16:46:53",
+                "priceChange24h": 319.2046976709038
             }
         },
         "success": True
