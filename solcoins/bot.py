@@ -68,17 +68,6 @@ class Watch(commands.Cog):
                 await channel.edit(name="@ ".join(split_name))
 
 
-        # get list of all coins to call /multi_price
-        # updated_prices = await get_price(address="blah")
-        # for item in to_update:
-        #     channel_id = item['channel_id']
-        #     address = item['address']
-        #     channel = discord.utils.get(guild.voice_channels, id=channel_id)
-        #     split_name = channel.name.split('@')
-        #     split_name[1] = str(updated_prices['data'][address]['value'])
-        #     await channel.edit(name="@ ".join(split_name))
-
-
 def bootstrap():
     cursor = database.cursor()
     cursor.execute("CREATE TABLE IF NOT EXISTS watchlist(guild_id, channel_id, name, address)")
