@@ -9,6 +9,10 @@ def bootstrap():
     _get_cursor().execute("CREATE TABLE IF NOT EXISTS watchlist(guild_id, channel_id, name, address)")
 
 
+def get_unique_addresses():
+    return _get_cursor().execute('SELECT DISTINCT address from watchlist').fetchall()
+
+
 def get():
     return _get_cursor().execute('SELECT guild_id, channel_id, address from watchlist').fetchall()
 

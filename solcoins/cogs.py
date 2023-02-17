@@ -16,11 +16,15 @@ class UpdateWatchlists(commands.Cog):
 
     @tasks.loop(minutes=5)
     async def update(self):
+        unique_addresses = [i[0] for i in self.db.get_unique_addresses()]
+        print(f"unique_addresses: {unique_addresses}")
+        if not unique_addresses:
+            return
+
+        updated_prices = await self.api.get_multi_price(",".join(unique_addresses))
         watchlists = _format_watchlist_for_updates(self.db.get())
 
         for guild in self.client.guilds:
-            addresses = [key['address'] for key in watchlists[guild.id]]
-            updated_prices = await self.api.get_multi_price(addresses)
             for item in watchlists[guild.id]:
                 channel_id = item['channel_id']
                 address = item['address']
@@ -28,7 +32,7 @@ class UpdateWatchlists(commands.Cog):
                 # todo: need to handle if guild deletes voice channel when down and throws error
                 channel = discord.utils.get(guild.voice_channels, id=channel_id)
                 split_name = channel.name.split('@')
-                split_name[1] = str(updated_prices['data'][address]['value'])
+                split_name[1] = str(updated_prices['data'][address]['value'])[:8]
                 print(f'Updating guild (id: {guild.id}) watchlist (channel_id: {channel.id} - address: {address}) with new price')
                 await channel.edit(name="@ ".join(split_name))
 
