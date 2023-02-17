@@ -25,7 +25,7 @@ async def on_guild_channel_delete(channel):
 
 
 @tree.command(name='watchlist', description='Add a coin to your watchlist by contract address')
-async def add_to_watchlist(ctx, name: str = '', address: str = ''):
+async def add_to_watchlist(ctx, name: str, address: str):
     print(f'Adding to watchlist\nname: {name}\ncontract_address: {address}')
     price = await api.get_price(address)
     channel = await ctx.guild.create_voice_channel(name=f"{name} @ {str(price['data']['value'])[:8]}", position=0)
