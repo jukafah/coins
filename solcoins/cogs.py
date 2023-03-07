@@ -1,5 +1,5 @@
 from collections import defaultdict
-
+from decimal import Decimal
 import discord
 from discord.ext import tasks, commands
 
@@ -32,8 +32,9 @@ class UpdateWatchlists(commands.Cog):
                 # todo: need to handle if guild deletes voice channel when down and throws error
                 channel = discord.utils.get(guild.voice_channels, id=channel_id)
                 split_name = channel.name.split('@')
-                split_name[1] = str(updated_prices['data'][address]['value'])[:8]
-                print(f'Updating guild (id: {guild.id}) watchlist (channel_id: {channel.id} - address: {address}) with new price')
+                updated_price = str(Decimal(updated_prices['data'][address]['value']))[:8]
+                split_name[1] = updated_price
+                print(f'Updating guild (id: {guild.id}) watchlist (channel_id: {channel.id} - address: {address}) with new price - price: {updated_price}')
                 await channel.edit(name="@ ".join(split_name))
 
 
