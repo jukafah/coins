@@ -30,6 +30,7 @@ async def add_to_watchlist(ctx, name: str, address: str):
     price = await api.get_price(address)
     channel = await ctx.guild.create_voice_channel(name=f"{name} @ {str(price['data']['value'])[:8]}", position=0)
     db.save(ctx.guild.id, channel.id, name, address)
+    await ctx.response.send_message("Token added!")
 
 
 client.run(env.TOKEN)
