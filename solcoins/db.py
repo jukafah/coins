@@ -1,6 +1,6 @@
 from sqlite3 import IntegrityError
 
-import env
+from solcoins import env
 import sqlite3
 
 database = sqlite3.connect(f'data/{env.DATABASE_NAME}')

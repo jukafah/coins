@@ -1,9 +1,7 @@
-import env
-import db
+from solcoins import env, db, api
+from solcoins.cogs import UpdateWatchlists
 
 import discord
-import api
-from cogs import UpdateWatchlists
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -33,4 +31,5 @@ async def add_to_watchlist(ctx, name: str, address: str):
     await ctx.response.send_message("Token added!")
 
 
-client.run(env.TOKEN)
+def start():
+    client.run(env.TOKEN)

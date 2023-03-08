@@ -1,4 +1,4 @@
-import env
+from solcoins import env
 import aiohttp
 
 
